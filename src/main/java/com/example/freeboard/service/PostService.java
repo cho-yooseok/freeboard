@@ -1,3 +1,4 @@
+// src/main/java/com/example/freeboard/service/PostService.java
 package com.example.freeboard.service;
 
 import com.example.freeboard.dto.PostCreateRequest;
@@ -27,9 +28,17 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getAllPosts(Pageable pageable) {
-        // PostRepository의 findAllWithAuthor 메서드 사용
-        Page<Post> postsPage = postRepository.findAllWithAuthor(pageable);
+    // searchKeyword 파라미터 추가
+    public Page<PostResponseDto> getAllPosts(Pageable pageable, String searchKeyword) {
+        Page<Post> postsPage;
+        if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+            // 검색어가 있을 경우 검색 쿼리 사용
+            postsPage = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseWithAuthor(searchKeyword, pageable);
+        } else {
+            // 검색어가 없을 경우 모든 게시글 조회 쿼리 사용
+            postsPage = postRepository.findAllWithAuthor(pageable);
+        }
+
         List<PostResponseDto> dtoList = postsPage.getContent().stream()
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
@@ -38,7 +47,6 @@ public class PostService {
 
     @Transactional // 조회수 증가로 인해 readOnly = true 제거
     public PostResponseDto getPostById(Long id) {
-        // PostRepository의 findByIdWithAuthor 메서드 사용
         Post post = postRepository.findByIdWithAuthor(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다. ID: " + id));
         post.setViewCount(post.getViewCount() + 1); // 조회수 증가
@@ -64,7 +72,7 @@ public class PostService {
 
     @Transactional
     public PostResponseDto updatePost(Long id, PostUpdateRequest postRequest, User currentUser) {
-        Post post = postRepository.findById(id) // 여기서는 Fetch Join이 필수는 아님, Post 객체와 비교만 하면 되므로
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("수정할 게시글을 찾을 수 없습니다. ID: " + id));
 
         if (!post.getAuthor().getId().equals(currentUser.getId())) {
@@ -80,7 +88,7 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long id, User currentUser) {
-        Post post = postRepository.findById(id) // 여기서는 Fetch Join이 필수는 아님
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("삭제할 게시글을 찾을 수 없습니다. ID: " + id));
 
         if (!post.getAuthor().getId().equals(currentUser.getId())) {
