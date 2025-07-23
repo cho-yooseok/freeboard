@@ -1,131 +1,119 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const postListBody = document.getElementById('post-list');
-    const paginationContainer = document.getElementById('pagination');
-    const writePostButton = document.getElementById('write-post-button');
+document.addEventListener('DOMContentLoaded', async () => {
+    const postListElem = document.getElementById('post-list');
+    const paginationElem = document.getElementById('pagination');
+    const searchInput = document.getElementById('search-input'); // 검색 입력 필드
+    const searchButton = document.getElementById('search-button'); // 검색 버튼
 
-    if (localStorage.getItem('accessToken')) {
-        writePostButton.style.display = 'inline-block';
-    } else {
-        writePostButton.style.display = 'none';
-    }
+    let currentPage = 0; // 현재 페이지 (0부터 시작)
+    const pageSize = 10; // 페이지당 게시글 수
+    let currentSearchKeyword = ''; // 현재 검색어
 
-    let currentPage = 0;
-    const pageSize = 10;
+    // 게시글 목록을 로드하는 함수
+    async function loadPosts(page = 0, searchKeyword = '') {
+        postListElem.innerHTML = '<tr><td colspan="5" class="no-posts">게시글을 불러오는 중...</td></tr>';
+        paginationElem.innerHTML = ''; // 페이지네이션 초기화
 
-    async function fetchPosts(page = 0) {
-        postListBody.innerHTML = '<tr><td colspan="5" class="no-posts">게시글을 불러오는 중...</td></tr>';
+        currentPage = page;
+        currentSearchKeyword = searchKeyword; // 현재 검색어 저장
+
         try {
-            const response = await fetch(`/api/posts?page=${page}&size=${pageSize}&sort=createdAt,desc`);
+            // 검색어가 있을 경우 쿼리 파라미터로 추가
+            const url = `/api/posts?page=${page}&size=${pageSize}${searchKeyword ? `&search=${encodeURIComponent(searchKeyword)}` : ''}`;
+            const response = await fetch(url);
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`게시글 로드 실패: ${response.status} ${response.statusText} - ${errorText}`);
+                const errorData = await response.json();
+                throw new Error(errorData.message || '게시글 로드 실패');
             }
 
             const pageData = await response.json();
             const posts = pageData.content;
             const totalPages = pageData.totalPages;
-            const totalElements = pageData.totalElements;
 
-            renderPosts(posts);
-            renderPagination(totalPages, pageData.number);
+            postListElem.innerHTML = ''; // 기존 내용 지우기
 
-            if (totalElements === 0) {
-                postListBody.innerHTML = '<tr><td colspan="5" class="no-posts">아직 게시글이 없습니다.</td></tr>';
+            if (posts.length === 0) {
+                postListElem.innerHTML = '<tr><td colspan="5" class="no-posts">게시글이 없습니다.</td></tr>';
+            } else {
+                posts.forEach(post => {
+                    const row = document.createElement('tr');
+                    const createdAt = new Date(post.createdAt);
+                    const formattedDate = `${createdAt.getFullYear()}-${(createdAt.getMonth() + 1).toString().padStart(2, '0')}-${createdAt.getDate().toString().padStart(2, '0')}`;
+
+                    row.innerHTML = `
+                        <td class="col-id">${post.id}</td>
+                        <td class="col-title"><a href="/post-detail.html?id=${post.id}">${post.title}</a></td>
+                        <td class="col-author">${post.authorUsername}</td>
+                        <td class="col-date">${formattedDate}</td>
+                        <td class="col-views">${post.viewCount}</td>
+                    `;
+                    postListElem.appendChild(row);
+                });
             }
+
+            // 페이지네이션 렌더링
+            renderPagination(totalPages, currentPage);
 
         } catch (error) {
             console.error('게시글 로드 중 오류 발생:', error);
-            postListBody.innerHTML = '<tr><td colspan="5" class="no-posts">게시글을 불러오는데 실패했습니다. 오류: ' + error.message + '</td></tr>';
+            postListElem.innerHTML = `<tr><td colspan="5" class="no-posts">게시글을 불러오는데 실패했습니다: ${error.message}</td></tr>`;
         }
     }
 
-    function renderPosts(posts) {
-        postListBody.innerHTML = '';
-        posts.forEach(post => {
-            const row = document.createElement('tr');
-            const createdAt = new Date(post.createdAt);
-            const formattedDate = `${createdAt.getFullYear()}-${(createdAt.getMonth() + 1).toString().padStart(2, '0')}-${createdAt.getDate().toString().padStart(2, '0')}`;
+    // 페이지네이션 렌더링 함수
+    function renderPagination(totalPages, currentPage) {
+        paginationElem.innerHTML = '';
 
-            row.innerHTML = `
-                <td>${post.id}</td>
-                <td><a href="/post-detail.html?id=${post.id}">${post.title}</a></td>
-                <td>${post.authorUsername}</td>
-                <td>${formattedDate}</td>
-                <td>${post.viewCount}</td>
-            `;
-            postListBody.appendChild(row);
-        });
-    }
+        const maxPagesToShow = 5; // 한 번에 보여줄 페이지 버튼 수
+        let startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
 
-    function renderPagination(totalPages, currentPageNumber) {
-        paginationContainer.innerHTML = '';
-
-        const prevButton = document.createElement('span');
-        prevButton.textContent = '이전';
-        prevButton.classList.add('page-link');
-        if (currentPageNumber > 0) {
-            prevButton.classList.remove('disabled');
-            prevButton.addEventListener('click', () => {
-                currentPage = currentPageNumber - 1;
-                fetchPosts(currentPage);
-            });
-        } else {
-            prevButton.classList.add('disabled');
-            prevButton.style.pointerEvents = 'none';
-        }
-        paginationContainer.appendChild(prevButton);
-
-        let startPage = Math.max(0, currentPageNumber - 2);
-        let endPage = Math.min(totalPages - 1, currentPageNumber + 2);
-
-        if (endPage - startPage < 4) {
-            if (startPage === 0) {
-                endPage = Math.min(totalPages - 1, 4);
-            } else if (endPage === totalPages - 1) {
-                startPage = Math.max(0, totalPages - 5);
-            }
+        // 끝 페이지가 부족하면 시작 페이지 조정
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(0, endPage - maxPagesToShow + 1);
         }
 
+        // 이전 페이지 버튼
+        if (currentPage > 0) {
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '이전';
+            prevButton.addEventListener('click', () => loadPosts(currentPage - 1, currentSearchKeyword));
+            paginationElem.appendChild(prevButton);
+        }
+
+        // 페이지 번호 버튼
         for (let i = startPage; i <= endPage; i++) {
-            let elementToAdd; // 추가할 요소를 저장할 변수
-
-            if (i === currentPageNumber) {
-                // 현재 페이지는 <a>가 아닌 <span>으로 생성하여 직접 추가
-                const currentPageSpan = document.createElement('span');
-                currentPageSpan.textContent = i + 1;
-                currentPageSpan.classList.add('current-page');
-                elementToAdd = currentPageSpan;
-            } else {
-                // 그 외 페이지는 <a>로 생성
-                const pageLink = document.createElement('a');
-                pageLink.textContent = i + 1;
-                pageLink.href = '#';
-                pageLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    currentPage = i;
-                    fetchPosts(currentPage);
-                });
-                elementToAdd = pageLink;
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i + 1;
+            if (i === currentPage) {
+                pageButton.classList.add('active');
             }
-            paginationContainer.appendChild(elementToAdd); // 여기서 생성된 요소를 DOM에 추가
+            pageButton.addEventListener('click', () => loadPosts(i, currentSearchKeyword));
+            paginationElem.appendChild(pageButton);
         }
 
-        const nextButton = document.createElement('span');
-        nextButton.textContent = '다음';
-        nextButton.classList.add('page-link');
-        if (currentPageNumber < totalPages - 1) {
-            nextButton.classList.remove('disabled');
-            nextButton.addEventListener('click', () => {
-                currentPage = currentPageNumber + 1;
-                fetchPosts(currentPage);
-            });
-        } else {
-            nextButton.classList.add('disabled');
-            nextButton.style.pointerEvents = 'none';
+        // 다음 페이지 버튼
+        if (currentPage < totalPages - 1) {
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '다음';
+            nextButton.addEventListener('click', () => loadPosts(currentPage + 1, currentSearchKeyword));
+            paginationElem.appendChild(nextButton);
         }
-        paginationContainer.appendChild(nextButton);
     }
 
-    fetchPosts(currentPage);
+    // 검색 버튼 클릭 이벤트 리스너
+    searchButton.addEventListener('click', () => {
+        const searchKeyword = searchInput.value.trim();
+        loadPosts(0, searchKeyword); // 검색 시 첫 페이지부터 로드
+    });
+
+    // 엔터 키로 검색 실행
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchButton.click(); // 검색 버튼 클릭 이벤트 트리거
+        }
+    });
+
+    // 초기 게시글 로드
+    loadPosts(currentPage, currentSearchKeyword);
 });

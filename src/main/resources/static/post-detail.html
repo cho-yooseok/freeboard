@@ -41,14 +41,15 @@
 
         <div class="comments-section">
             <h3>댓글</h3>
-            <div id="comment-list" class="comment-list">
-                <p class="no-comments">아직 댓글이 없습니다.</p>
-            </div>
             <div id="comment-form-container" class="comment-form-container" style="display: none;">
                 <h4>댓글 작성</h4>
-                <textarea id="comment-content" placeholder="댓글을 입력하세요." rows="4"></textarea>
+                <textarea id="comment-content-input" placeholder="댓글을 입력하세요." rows="4"></textarea>
                 <button id="submit-comment-button" class="btn-comment-submit">댓글 작성</button>
                 <div id="comment-error" class="error-message"></div>
+            </div>
+
+            <div id="comment-list" class="comment-list">
+                <p class="no-comments">아직 댓글이 없습니다.</p>
             </div>
         </div>
     </div>
@@ -62,5 +63,6 @@
 </footer>
 
 <script src="js/main.js"></script>
-<script src="js/post-detail.js"></script> </body>
+<script src="js/post-detail.js"></script>
+</body>
 </html>
