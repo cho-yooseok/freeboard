@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <h1 class="logo"><a href="/">자유 게시판</a></h1>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/">홈</a></li>
+                <li id="auth-links">
+                    <a href="/register.html">회원가입</a>
+                    <a href="/login.html">로그인</a>
+                </li>
+                <li id="write-post-link" style="display: none;"><a href="/write-post.html">글쓰기</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="container content">
+    <div class="auth-form-container">
+        <h2>회원가입</h2>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="username">사용자 이름</label>
+                <input type="text" id="username" name="username" required>
+                <div id="username-error" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" required>
+                <div id="password-error" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">비밀번호 확인</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+                <div id="confirm-password-error" class="error-message"></div>
+            </div>
+            <button type="submit" class="primary-btn">가입하기</button>
+            <div id="general-error" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+        </form>
+        <div class="link-text">
+            이미 계정이 있으신가요? <a href="/login.html">로그인</a>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2025 자유 게시판. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/register.js"></script>
+</body>
+</html>
