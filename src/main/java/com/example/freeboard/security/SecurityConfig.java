@@ -15,13 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Collection;
-import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -61,7 +54,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // HTML, CSS, JS, 이미지 등 정적 파일과 메인 페이지 접근 허용
-                        .requestMatchers("/", "/**.html", "/css/**", "/js/**", "/img/**").permitAll()
+                        // favicon.ico 경로 추가
+                        .requestMatchers("/", "/**.html", "/css/**", "/js/**", "/img/**", "/favicon.ico").permitAll()
 
                         .requestMatchers("/api/auth/**").permitAll() // 회원가입, 로그인
                         .requestMatchers(HttpMethod.GET, "/api/posts/**", "/api/posts/*/comments").permitAll() // 게시글/댓글 조회

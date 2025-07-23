@@ -1,17 +1,17 @@
-// 예시: PostController.java (가상의 코드)
+// src/main/java/com/example/freeboard/controller/PostController.java
 package com.example.freeboard.controller;
 
 import com.example.freeboard.dto.PostCreateRequest;
 import com.example.freeboard.dto.PostResponseDto;
 import com.example.freeboard.dto.PostUpdateRequest;
-import com.example.freeboard.entity.User; // User 엔티티 import (현재 인증된 사용자 정보 가져올 때 필요)
+import com.example.freeboard.entity.User;
 import com.example.freeboard.service.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal; // Spring Security 사용자 정보 가져올 때
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -25,10 +25,12 @@ public class PostController {
         this.postService = postService;
     }
 
-    // 게시글 목록 조회
+    // 게시글 목록 조회 (검색 기능 추가)
     @GetMapping
-    public ResponseEntity<Page<PostResponseDto>> getAllPosts(@PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable) {
-        Page<PostResponseDto> posts = postService.getAllPosts(pageable);
+    public ResponseEntity<Page<PostResponseDto>> getAllPosts(
+            @PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String search) { // search 파라미터 추가
+        Page<PostResponseDto> posts = postService.getAllPosts(pageable, search); // search 파라미터 전달
         return ResponseEntity.ok(posts);
     }
 
@@ -42,7 +44,7 @@ public class PostController {
     // 게시글 생성
     @PostMapping
     public ResponseEntity<PostResponseDto> createPost(@Valid @RequestBody PostCreateRequest postRequest,
-                                                      @AuthenticationPrincipal User currentUser) { // 인증된 사용자 정보 주입
+                                                      @AuthenticationPrincipal User currentUser) {
         PostResponseDto createdPost = postService.createPost(postRequest, currentUser);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
