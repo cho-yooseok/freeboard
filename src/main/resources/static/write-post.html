@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새 게시글 작성</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <h1 class="logo"><a href="/static">자유 게시판</a></h1>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/static">홈</a></li>
+                <li id="auth-links">
+                    <a href="/register.html">회원가입</a>
+                    <a href="/login.html">로그인</a>
+                </li>
+                <li id="write-post-link" style="display: none;"><a href="/write-post.html">글쓰기</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="container content">
+    <div class="post-form-container">
+        <h2 id="form-title">새 게시글 작성</h2>
+        <form id="post-form">
+            <div class="form-group">
+                <label for="title">제목</label>
+                <input type="text" id="title" name="title" required>
+                <div id="title-error" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea id="content" name="content" rows="15" required></textarea>
+                <div id="content-error" class="error-message"></div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="primary-btn" id="submit-post-button">작성 완료</button>
+                <button type="button" class="btn-cancel" onclick="window.history.back()">취소</button>
+            </div>
+            <div id="general-error" class="error-message"></div>
+        </form>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2025 자유 게시판. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/write-post.js"></script> </body>
+</html>

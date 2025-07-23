@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.7' // Spring Boot 버전
+    id 'org.springframework.boot' version '3.2.7'
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
@@ -8,7 +8,7 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17' // Java 버전
+    sourceCompatibility = '17'
 }
 
 configurations {
@@ -22,12 +22,29 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA (데이터베이스 연동)
-    implementation 'org.springframework.boot:spring-boot-starter-web'     // 웹 (REST API)
-    runtimeOnly 'com.mysql:mysql-connector-j'                             // MySQL 드라이버
-    compileOnly 'org.projectlombok:lombok'                                // Lombok
+    // Spring Data JPA (데이터베이스 연동)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Spring Web (RESTful API 구축)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // MySQL JDBC 드라이버
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    // Lombok (getter/setter 등 자동 생성)
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    // Spring Boot 테스트 (단위/통합 테스트)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Spring Security (보안)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // JWT API (토큰 생성 및 유효성 검사)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    // JWT 구현체 (런타임 시 필요)
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    // JWT JSON 파서 (런타임 시 필요)
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // **중요: 유효성 검사 (jakarta.validation)를 위한 의존성**
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('test') {

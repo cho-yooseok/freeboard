@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자유 게시판</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <h1 class="logo"><a href="/">자유 게시판</a></h1>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/">홈</a></li>
+                <li id="auth-links">
+                    <a href="/register.html">회원가입</a>
+                    <a href="/login.html">로그인</a>
+                </li>
+                <li id="write-post-link" style="display: none;"><a href="/write-post.html">글쓰기</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="container content">
+    <h2 class="section-title">최신 게시글</h2>
+    <div class="board-header">
+        <div class="board-search">
+            <input type="text" id="search-input" placeholder="검색어를 입력하세요">
+            <button id="search-button" class="btn-search">검색</button>
+        </div>
+        <div class="board-actions">
+            <a href="/write-post.html" class="btn-write" id="write-post-button" style="display: none;">글쓰기</a>
+        </div>
+    </div>
+
+    <table class="board-table">
+        <thead>
+        <tr>
+            <th class="col-id">번호</th>
+            <th class="col-title">제목</th>
+            <th class="col-author">작성자</th>
+            <th class="col-date">작성일</th>
+            <th class="col-views">조회수</th>
+        </tr>
+        </thead>
+        <tbody id="post-list">
+        <tr><td colspan="5" class="no-posts">게시글을 불러오는 중...</td></tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" id="pagination">
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2025 자유 게시판. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/index.js"></script> </body>
+</html>
