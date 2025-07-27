@@ -6,13 +6,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import java.util.Collection; // 추가
-import java.util.Collections; // 추가
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
-import org.springframework.security.core.GrantedAuthority; // 추가
-import org.springframework.security.core.authority.SimpleGrantedAuthority; // 추가
-import org.springframework.security.core.userdetails.UserDetails; // 추가
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Getter

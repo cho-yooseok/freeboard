@@ -1,10 +1,8 @@
-// src/main/java/com/example/freeboard/dto/CommentResponseDto.java
 package com.example.freeboard.dto;
 
 import com.example.freeboard.entity.Comment;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Getter

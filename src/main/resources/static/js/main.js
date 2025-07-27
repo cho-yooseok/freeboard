@@ -61,3 +61,4 @@ async function authenticatedFetch(url, options = {}) {
 
     return response;
 }
+

@@ -1,10 +1,9 @@
-// src/main/java/com/example/freeboard/controller/CommentController.java
 package com.example.freeboard.controller;
 
 import com.example.freeboard.dto.CommentCreateRequest;
 import com.example.freeboard.dto.CommentResponseDto;
 import com.example.freeboard.dto.CommentUpdateRequest;
-import com.example.freeboard.entity.Comment; // Comment 엔티티 임포트는 이제 필요 없거나 제거 가능
+import com.example.freeboard.entity.Comment;
 import com.example.freeboard.entity.User;
 import com.example.freeboard.service.CommentService;
 import com.example.freeboard.service.UserService;
@@ -15,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -54,9 +52,9 @@ public class CommentController {
     // 댓글 수정 (작성자만 가능)
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentResponseDto> updateComment( // 반환 타입 DTO로 유지
-                                                             @PathVariable Long commentId,
-                                                             @Valid @RequestBody CommentUpdateRequest commentRequest,
-                                                             @AuthenticationPrincipal UserDetails userDetails) {
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentUpdateRequest commentRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
         User currentUser = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
 

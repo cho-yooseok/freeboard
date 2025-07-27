@@ -1,0 +1,253 @@
+package com.example.freeboard.controller;
+
+import com.example.freeboard.dto.CommentCreateRequest;
+// 댓글 생성 요청 시 사용될 데이터 전송 객체(DTO)를 임포트합니다
+import com.example.freeboard.dto.CommentResponseDto;
+// 댓글 응답 시 사용될 DTO를 임포트합니다.
+import com.example.freeboard.dto.CommentUpdateRequest;
+// 댓글 수정 요청 시 사용될 DTO를 임포트 합니다
+import com.example.freeboard.entity.Comment;
+// 댓글 데이터를 나타내는 엔티티(데이터베이스 테이블과 매핑) 클래스를 임포트합니다
+import com.example.freeboard.entity.User;
+// 사용자 데이터를 나타내는 엔티티 클래스를 임포트합니다
+import com.example.freeboard.service.CommentService;
+// 사용자 관련 비즈니스 로직을 처리하는 서비스 클래스를 임포트합니다
+import jakarta.validation.Valid;
+// Jakarta Bean Validation API를 사용하여 객체 유효성 검사를 수행할 때
+// 사용되는 어노테이션을 임포트합니다
+import org.springframework.beans.factory.annotation.Autowired;
+// Spring의 의존성 주입을 위한 어노테이션을 임포트합니다 (생성자 주입 시 생략 가능)
+import org.springframework.http.HttpStatus;
+// Http 상태 코드를 제공하는 enum을 임포트합니다 (예: 200 OK, 201 Created, 204 No Content)
+import org.springframework.http.ResponseEntity;
+// HTTP 응답 전체를 표현하는 클래스를 임포트합니다 (상태코드, 헤더, 본문 포함)
+import org.springframework.security.core.annotaion.AuthenticationPrincipal;
+// Spring Security에서 현재 인증된 사용자(Principal) 정보를 주입받을 때
+// 사용하는 어노테이션을 임포트합니다
+import org.springframework.security.core.userdetails.UserDetails;
+// Spring Security에서 사용자 상세 정보를 나타내는 인터페이스를 임포트합니다
+import org.springframework.web.bind.annotaion.*;
+// Spring MVC의 모든 REST관련 어노테이션을 한 번에 임포트합니다
+import java.util.List;
+// 자바 유틸리티 패키지의 List 인터페이스를 임포트합니다.
+
+@RestController
+// 이 클래스가 RESTful 웹 서비스의 컨트롤러임을 나타냅니다
+// 모든 메소드의 반환 값이 HTTP 응답 본문으로 직접 전송됩니다.
+@RequestMapping("/api/posts/{postId}/comments")
+// 이 컨트롤러의 모든 핸들러 메소드는 "/api/posts/{postId}/Comments" 경로 아래에서 동작합니다
+// {postId}는 URL 경로에서 변수처럼 사용되어 특정 게시글 ID를 나타냅니다
+public class CommentController {
+
+    private final CommentService commentService;
+    // 댓글 관련 비즈니스 로직을 담당하는 CommentService 인스턴스입니다
+    private final UserService userService;
+    // 사용자 관련 비즈니스 로직을 담당하는 UserService 인스턴스입니다
+    
+    @Autowired
+    // 스프링에게 이 생성자를 통해 필요한 객체들을 주입해 달라고
+    // 요청하는 어노테이션입니다. (최근 버전의 스프링에서는 생성자가 하나일 경우 생략 가능)
+    public CommentController(CommentService commentService, UserService userService) {
+        this.commentService = commentService;
+        this.userService = userService;
+    }
+
+    // 특정 게시글의 댓글 조회 - 로그인 없이 접근 가능
+    @GetMapping
+    // HTTP GET 요청을 처리하는 메소드에 붙이는 어노테이션입니다
+    // (URL : /api/posts/{postId}/comments)
+    public ResponseEntity<List<CommentResponseDto>> getCommentsByPostId(@PathVariable Long postId) {
+        // @PathVariable Long postId : {postId} 부분의 값을 Long 타입의 postId 변수로 받아옵니다
+        // ResponseEntity<List<CommentResponseDto>> HTTP 응답으로 반환하겠다는 의미입니다.
+
+        List<CommentResponseDto> commentDtos = commentService.getCommentsByPostId(postId);
+        // CommentService를 호출하여 특정 게시글의 댓글 목록을 가져옵니다. DTO 형태로 반환됩니다
+        return ResponseEntity.ok(commentDtos);
+        // 가져온 댓글 목록(commentDtos)과 함께 HTTP 200OK 상태 코드를 반환합니다
+    }
+
+    // 댓글 생성 (로그인 후 접근 가능)
+    @PostMapping
+    // Http Post 요청을 처리하는 메소드에 붙이는 어노테이션 입니다. (URL : /api/posts/{postId/comments})
+    public ResponseEntity<CommentResponseDto> createComment(
+        @PathVariable Long postId,
+        // URL 경로에서 게시글 ID를 받아옵니다
+        @Valid @RequestBody CommentCreateRequest commentRequest,
+        // HTTP 요청 본문의 JSON 데이터를 CommentCreateRequest 객체로 변환하고 유효성 검사를 수행합니다
+        @AuthenticationPrincipal UserDetails userDetails) {
+        // 현재 로그인된 사용자 정보를 Spring Security로부터 UserDetails 객체로 주입받습니다
+
+        // 1. 현재 로그인된 사용자 정보 가져오기
+        // userDetails.getUsername()으로 사용자 이름을 가져와 UserService를 통해 User엔티티를 찾습니다
+        User currentUser = userService.findByUsername(userDetails.getUsername())
+            .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다"));
+            // 만약 userDetails에서 가져온 사용자 이름으로 User을 찾을 수 없다면 예외를 발생시킵니다
+
+        // 2. 댓글 생성 로직 호출
+        Comment createdComment = commentService.createComment(postId, commentRequest, currentUser);
+        // CommentService를 호출하여 새로운 댓글을 생성합니다. 게시글ID, 댓글 요청 데이터, 현재 사용자 정보를 전달합니다
+
+        // 3. 생성된 댓글 정보와 함께 응답 반환
+        return new ResponseEntity<>(new CommentResponseDto(createdComment), HttpStatus.CREATED);
+        // 생성된 댓글(createdComment)을 CommentResponseDto로 변환하여, HTTP201 Created 상태 코드와 함께 반환합니다
+
+
+    }
+
+    // 댓글 수정 (작성자만 가능)
+    @PutMapping("/{commentId}")
+    // HTTP PUT 요청을 처리하는 메소드에 붙이는 어노테이션입니다
+    // (URL : /api/posts/{postId}/comments/{commentId})
+    public ResponseEntity<CommentResponseDto> updateComment ( // 반환 타입은 수정된 댓글 정보를 담는 DTO 입니다.
+            @PathVariable Long commentId,
+            // URL 경로에서 댓글 ID를 받아옵니다
+            @Valid @RequestBody CommentUpdateRequest commentRequest,
+            // HTTP 요청 본문의 JSON 데이터를 CommentUpdateRequest 객체로 변환하고 유효성 검사를 수행합니다
+            @AuthenticationPrincipal UserDetails userDetails) {
+            // 현재 로그인된 사용자 정보를 주입받습니다
+
+        // 1. 현재 로그인된 사용자 정보 가져오기( 댓글 생성과 동일)
+        User currentUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다"));
+
+        // 2. 댓글 수정 로직 호출
+        // CommentService에서 댓글 수정 후 DTO로 변환하여 반환하므로 바로 받아서 사용합니다.
+        CommentResponseDto updatedCommentDto = commentService.updateComment(commentId, commentRequest, currentUser);
+
+        // 3. 수정된 댓글 정보와 함께 응답 반환
+        return ResponseEntity.ok(updateCommentDto);
+        // 수정된 댓글 정보(updateCommentDto)와 함께 HTTP 200 OK 상태 코드를 반환합니다
+        }
+
+        // 댓글 삭제 (작성자만 가능)
+        @DeleteMapping("/{commentId}")
+        // HTTP DELETE 요청을 처리하는 메소드에 붙이는 어노테이션입니다. (URL: /api/posts/{postId}/comments/{commentId})
+        public ResponseEntity<Void> deleteComment(
+            // 반환 타입은 없음을 나타내는 Void입니다. (성공 시 내용 없는 응답)
+            @PathVariable Long commentId,
+            // URL 경로에서 삭제할 댓글 ID를 받아옵니다
+            @AuthenticationPrincipal UserDetails userDetails) {
+            // 현재 로그인된 사용자 정보를 주입받습니다.
+
+            // 1. 현재 로그인된 사용자 정보 가져오기 (댓글 생성/수정과 동일)
+            User currentUser = userService.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다"));
+
+            // 2. 댓글 삭제 로직 호출
+            commentService.deleteComment(commentId, currentUser);
+            // CommentService를 호출하여 댓글을 삭제합니다. 댓글 ID와 현재 사용자 정보를 전달합니다
+
+            // 3. 삭제 성공 응답 반환
+            return ResponseEntity.noContent().build();
+            // 댓글 삭제 성공 시, HTTP 204 No Content 상태 코드를 반환합니다. 이는 "성공적으로 처리되었으나 돌려줄 내용이 없음" 을 의미합니다
+        }
+}
+
+
+상세 문법 해석
+public class CommentController와 public CommentController의 차이점
+-> 이둘은 같은 대상을 지칭하는 것이 아니라, 자바코드에서 완전히 다른 의미를 가집니다
+
+public class CommentController
+이것은 클래스 선언(Class Declaration)입니다
+public : 이 클래스가 모든 곳에서 접근 가능하도록 접근제어자를 지정한 것입니다
+class : CommentController가 클래스임을 나타내는 키워드입니다.
+클래스는 객체를 생성하기 위한 설계도 또는 템플릿입니다
+CommentController : 이 클래스의 이름입니다
+
+간단히 말해, public class CommentController는 "나는 CommentController 라는 이름의
+공개 클래스다" 라고 선언하는 것입니다.
+
+
+public CommentController(CommentService commentService, UserService userService)
+이것은 CommentController 클래스의 생성자(Constructor)입니다
+
+public : 이 생성자가 모든 곳에서 접근 가능하도록 접근 제어자를 지정한 것입니다
+CommentController : 생성자의 이름입니다. 생성자의 이름은 항상 클래스 이름과 동일해야합니다
+(CommentService commentService, UserService userService) : 
+이 생성자가 두 개의 매개변수(CommentService 타입의 commentService와 UserService 타입의 userService)를
+받는다는 것을 의미합니다. 이 매개변수들은 주로 이 클래스의 인스턴스가 생성될 때 필요한 의존성(dependency)을
+주입받는 데 사용됩니다.
+
+간단히 말해, public CommentController(...)는 "나는 CommentController 객체를 만들 때 사용되는 생성자이며,
+CommentService와 UserService를 받아서 객체를 초기화한다"라는 의미입니다. 
+코드에서 Autowired어노테이션이 붙어 있는 것을 보면, 스프링(Spring) 프레임워크가 이 생성자를 통해 필요한
+의존성을 자동으로 주입해준다는 것을 알 수 있습니다.
+
+즉,
+public class CommentController : CommentController 라는 이름의 클래스를 정의하는 부분입니다
+public CommentController(...) : CommentController 클래스의 객체를 생성하고 초기화 할때 사용되는 생성자입니다
+
+클래스는 일종의 "빵을 만드는 틀"이고, 생성자는 그 "틀을 가지고 빵을 실제로 만드는 과정"이라고 비유할 수 있습니다
+
+
+
+return ResponseEntity.ok(commentDtos);
+HTTP 응답을 구성하고 반환하는 코드입니다.
+
+return
+메서드의 실행을 종료하고, 명시된 값을 호출한 곳으로 돌려준다는 자바 키워드입니다. 여기서는  HTTP 응답 객체를
+반환하게 됩니다.
+
+ResponseEntity
+스프링 프레임워크에서 제공하는 클래스입니다
+이 클래스는 HTTP응답전체(body, headers, status code)를 표현하는 데 사용됩니다.
+컨트롤러 메서드가 HTTP 응답을 완전히 제어해야 할 때 유용하게 사용됩니다.
+일반적으로 @ResponseBody 어노테이션이나 @RestController 어노테이션을 사용하면 스프링이
+자동으로 자바 객체를 JSON 등으로 변환하여 응답 본문에 넣어주지만, ResponseEntity를 사용하면
+개발자가 상태코드, 헤더 등 더 많은 부분을 직접 제어할 수 있습니다.
+
+.ok()
+ResponseEntity 클래스의 정적 팩토리 메서드(static factory method) 중 하나입니다
+이 메서드는 HTTP 상태코드 200 (OK)를 가진 ResponseEntity.BodyBuilder 객체를 반환합니다
+즉, "성공적인 응답을 보낼 준비가 되었다" 는 것을 나타냅니다
+ResponseEntity.ok()는 new ResponseEntity<>(HttpStatus.OK)와 같은 역할을 간편하게
+수행 할 수 있도록 도와줍니다
+
+(commentDtos) :
+ok()메서드가 반환하는 BodyBuilder 객체의 body()메서드에 해당하는 부분입니다 
+(편의상 .body()가 생략된 형태로 자주 사용됩니다)
+commentDtos는 응답의 본문(Body)으로 사용될 데이터입니다
+스프링은 이 commentDtos 객체를 HTTP 응답 본문에 담기 위해 
+(기본적으로 JSON형태로) 직렬화(Serialization) 하여 전송합니다
+
+즉,
+return ResponseEntity.ok(commentDtos); 이 코드는 다음을 의미합니다
+
+"이 메서드의 실행을 종료하고, HTTP 상태코드 200(OK)와 함께 commentDtos 객체를 응답 본문에
+담아 HTTP 응답으로 반환하라
+
+이는 클라이언트에게 요청이 성공적으로 처리되었고, 요청한 댓글 데이터(commentDtos)를 응답 본문으로
+제공한다는 것을 알려주는 표준적인 방법입니다.
+
+
+
+public ResponseEntity<CommentResponseDto> createComment(...) :
+이 메서드는 createComment 라는 이름으로, 댓글 생성 요청을 받아서 처리합니다
+ResponseEntity<CommentResponseDto>는 이 메서드가 처리 결과를 HTTP 응답으로 돌려줄것 인데,
+그 응답의 본문(body)에 CommentResponseDto 타입의 객체가 담길 것이라는 의미입니다.
+CommentResponseDto는 새로 생성된 댓글 정보를 클라이언트에게 돌려줄 때 사용하는 데이터 형식이라고
+생각하면 됩니다.
+
+@Valid @RequestBody CommentCreateRequest commentRequest :
+HTTP 요청의 본문(body)에 담긴 데이터를 CommentCreateRequest 객체로 변환해서 가져옵니다
+commentRequest 안에는 사용자가 작성한 댓글 내용 같은 정보가 들어있다
+@Valid는 이 commentRequest 객체가 유효성 검사를 통과해야 한다는 것을 의미합니다
+(예 : 댓글 내용이 비어있지 않아야 한다 등)
+
+@AuthenticationPrincipal UserDetails userDetails : 
+현재 로그인한 사용자의 정보를 가져옵니다.
+스프링 시큐리티(Spring Security)를 사용하고 있다면, 로그인된 사용자의 세션에서 사용자 정보(UserDetails)를
+자동으로 주입해줍니다.
+
+
+User currentUser = userService.findByUsername(userDetails.getUsername())
+.orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다"));   :
+
+userDetails 에서 현재 로그인한 사용자의 아이디(username)을 가져옵니다
+그 아이디를 이용해서 userService(사용자 정보를 다루는 서비스)에서 해당 사용자의 상세 정보(User 객체)를
+데이터베이스에서 찾아옵니다.
+
+만약 로그인한 사용자인데도 정보를 찾을 수 없다면, "인증된 사용자를 찾을 수 없습니다" 라는 오류를 발생시킵니다
+
+

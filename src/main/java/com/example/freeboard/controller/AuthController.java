@@ -1,3 +1,4 @@
+// freeboard\src\main\java\com\example\freeboard\controller\AuthController.java
 package com.example.freeboard.controller;
 
 import com.example.freeboard.dto.AuthRequest;
