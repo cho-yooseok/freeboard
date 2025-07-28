@@ -1,0 +1,37 @@
+package com.example.freeboard.dto;
+
+import jakarta.validation.constraints.NotBlank;
+//빈 문자열이 아닌지 유효성 검사를 위한 어노테이션 임포트
+import lombok.Getter;
+// Lombok 라이브러리에서 Getter 메서드를 자동으로 생성해주는 어노테이션 임포트
+import lombok.Setter;
+// Lombok 라이브러리에서 Setter 메서드를 자동으로 생성해주는 어노테이션 임포트
+
+/*
+사용자 인증 요청(로그인 등)에 필요한 정보를 담은 DTO(Data Transfer Object) 클래스입니다
+클라이언트로부터 사용자 이름(username)과 비밀번호(password)를 받아 서버로 전송할 때 사용됩니다
+*/
+@Getter // 클래스의 모든 필드에 대해 자동으로 public Getter 메서드를 생성합니다.
+@Setter // 클래스의 모든 필드에 대해 자동으로 public Setter 메서드를 생성합니다.
+public class AuthRequest {
+    /*
+    사용자 이름을 저장하는 필드입니다
+    @Not Blank 어노테이션을 사용하여 이 필드가 null이거나 비어있거나 공백만으로 이루어져서는 안 됨을 지정합니다
+    만약 유효성 검사에 실패할 경우 "사용자 이름은 필수입니다"라는 메시지가 반환됩니다
+    */
+    @NotBlank(message = "사용자 이름은 필수입니다.")
+    private String username;
+
+    /*
+    비밀번호를 저장하는 필드입니다
+    */
+    @NotBlank(message = "비밀번호는 필수입니다")
+    private String password;
+}
+
+
+해설
+AuthRequest DTO는 Spring Boot와 같은 프레임워크에서 요청바디(Request Body)를 
+자바 객체로 변환할 때(@ReqeustBody 어노테이션 등) 주로 사용되며,
+클라이언트가 보낸 데이터에 대한 기본적인 유효성 검사(@Valid 어노테이션과 함께 사용)를
+서버 단에서 수행하는 데 큰 도움을 줍니다
