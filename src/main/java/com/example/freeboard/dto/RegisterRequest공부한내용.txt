@@ -1,0 +1,51 @@
+package com.example.freeboard.dto;
+
+import jakarta.validation.constraints.NotBlank;
+// 이 어노테이션은 문자열이 null이 아니고, 공백 문자열이 아니며, 하나 이상의 비공백 문자를 포함해야 함을 검증할 때 사용됩니다
+// 즉, 해당 필듣가 반드시 채워져 있어야 함을 의미합니다.
+
+import jakarta.validation.constrains.Size;
+// 이 어노테이션은 컬렉션, 배열, 맵, 문자열 등의 크기가 지정된 범위 내에 있는지 검증할 때 사용됩니다
+// 여기서는 문자열(username, password)의 길이를 제한하는 데 사용됩니다.
+
+import lombok.Getter;
+// Lombok 라이브러리에서 제공하는 기능으로, 이 어노테이션을 클래스 위에 붙이면
+// 컴파일 시 모든 필드에 대한 'getter'메서드를 자동으로 생성해줍니다.
+// 예를 들어, 'getUsername()'과 'getPassword()' 메서드가 자동으로 만들어집니다
+
+import lombok.Setter;
+// Lombok 라이브러리에서 제공하는 기능으로, 이 어노테이션을 클래스 위에 붙이면
+// 컴파일 시 모든 필드에 대한 'setter'메서드를 자동으로 생성해줍니다.
+// 예를 들어, 'setUsername(String username)'과 'setPassword(String password)' 메서드가 자동으로 만들어 집니다
+
+@Getter // 이 클래스의 모든 필드에 대한 getter 메서드를 자동으로 생성합니다
+@Setter // 이 클래스의 모든 필드에 대한 setter 메서드를 자동으로 생성합니다
+public class RegisterRequest {
+    // 'RegisterRequest'라는 이름의 공개(public) 클래스를 선언합니다.
+    // 이 클래스는 클라이언트로부터 사용자 회원가입 요청 시 사용자 이름과 비밀번호를 받아
+    // 서버로 전송할 때 사용되는 데이터 모델입니다.
+
+    @NotBlank(message = "사용자 이름은 필수입니다.")
+    // 'username'필드가 비어있거나 공백만으로 이루어져 있지 않아야 함을 검증합니다
+    // 만약 유효성 검사를 통과하지 못하면 "사용자 이름은 필수입니다." 라는 메시지를 반환합니다
+    private String username;
+    // 사용자 이름을 지정하는 private 필드입니다. 외부에서 직접 접근할 수 없고, getter/setter를 통해 접근합니다
+
+    @NotBlank(message = "비밀번호는 필수입니다.")
+    // 'password' 필드가 비어있거나 공백만으로 이루어져 있지 않아야 함을 검증합니다
+    // 만약 유효성 검사를 통과하지 못하면 "비밀번호는 필수입니다"라는 메시지를 반환합니다
+    @Size(min = 2, message = "비밀번호는 2자 이상이어야 합니다")
+    // 'password' 필드의 문자열 길이가 최소 2자 이상이어야 함을 검증합니다. (최대 길이는 지정되지 않음)
+    // 2자 미만이면 "비밀번호는 2자 이상이어야 합니다." 라는 메시지를 반환합니다
+    private String password;
+    // 비밀번호를 저장하는 private 필드입니다. 외부에서 직접 접근할 수 없고, getter/setter를 통해 접근합니다
+}
+
+
+해설
+위 코드는 웹 애플리케이션에서 새로운 사용자 회원가입 요청을 받을 때 사용되는 데이터 전송 객체(DTO)인 RegisterRequest 클래스입니다.
+쉽게 말해, 사용자가 회원가입 시 입력하는 아이디와 비밀번호 정보를 담는 바구니이자, 이 정보들이 어떤 규칙을 따라야 하는지 정의하는 역할을 합니다
+
+RegisterRequest 클래스는 사용자가 회원가입 시 입력하는 아이디(username)와 비밀번호(password)를 서버에 전달하기 위한 데이터 형식입니다
+
+@Getter와 @Setter는 Lombok라이브러리를 통해 게터/세터 메서드를 자동으로 생성하여 코드를 간결하게 유지해 줍니다

@@ -31,4 +31,25 @@ public class AuthResponse {
         // 'void'는 이 메서드가 아무것도 반환하지 않음을 의미합니다
         this.accessToken = accessToken;
     }
-} 
+}
+
+해설
+위 코드는 웹 애플리케이션에서 사용자 인증(로그인)이 성공했을 때 서버가 클라이언트에게 돌려주는
+응답 데이터를 담는 AuthResponse 클래스입니다.
+주로 로그인 후 클라이언트가 앞으로 요청을 보낼 때 사용할 접근토큰(access token)을 포함하고 있습니다.
+
+AuthResponse 클래스는 로그인에 성공한 사용자에게 서버가 넘겨주는 핵심정보,
+즉 accessToken을 담는 컨테이너 입니다.
+
+private String accessToken;
+사용자가 앞으로 API요청을 할 때 "나 인증된 사용자야!" 라고 증명할 수 있는 특별한 문자열(토큰)을
+저장하는 곳입니다.
+private 이라서 이 클래스 밖에서는 직접 접근할 수 없고, 정해진 메서드를 통해서만 접근 가능합니다
+
+public AuthResponse(String accessToken)
+이 클래스의 객체를 만들 때 사용되는 부분입니다
+여기에 accessToken을 넣어주면 AuthResponse 객체가 해당 토큰을 가지게 됩니다
+
+getAccessToken() / setAccessToken() :
+accessToken 값을 가져오거나(get) 새로운 값으로 설정할(set) 때 사용하는 메서드들입니다
+결과적으로 이 클래스는 로그인 성공 시 클라이언트에게 필요한 인증 정보를 깔끔하게 전달하는 역할을 수행합니다
